@@ -11,6 +11,13 @@ import org.junit.Test
  */
 class VideoLayoutTest {
     @Test
+    fun `ten percent changes width while preserving height`() {
+        assertEquals(VideoRect(697, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1.4f))
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1.5f))
+        assertEquals(VideoRect(797, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1.6f))
+    }
+
+    @Test
     fun `width adjustment stays on screen and landscape remains fitted`() {
         assertEquals(VideoRect(498, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1f))
         assertEquals(VideoRect(996, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 2f))
