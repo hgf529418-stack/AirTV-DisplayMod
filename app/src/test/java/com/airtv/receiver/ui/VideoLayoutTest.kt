@@ -10,6 +10,14 @@ import org.junit.Test
  * has to be fitted inside the screen and centred.
  */
 class VideoLayoutTest {
+    @Test
+    fun `width adjustment stays on screen and landscape remains fitted`() {
+        assertEquals(VideoRect(498, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1f))
+        assertEquals(VideoRect(996, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 2f))
+        assertEquals(VideoRect(1920, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 4f))
+        assertEquals(VideoRect(1920, 885), VideoLayout.automatic(1080, 498, 1920, 1080, 4f))
+    }
+
 
     @Test
     fun `automatic widens portrait without cropping`() {
