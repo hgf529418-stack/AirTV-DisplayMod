@@ -10,6 +10,41 @@ import org.junit.Test
  * has to be fitted inside the screen and centred.
  */
 class VideoLayoutTest {
+    @Test
+    fun `ten percent changes width while preserving height`() {
+        assertEquals(VideoRect(697, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1.4f))
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1.5f))
+        assertEquals(VideoRect(797, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1.6f))
+    }
+
+    @Test
+    fun `width adjustment stays on screen and landscape remains fitted`() {
+        assertEquals(VideoRect(498, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 1f))
+        assertEquals(VideoRect(996, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 2f))
+        assertEquals(VideoRect(1920, 1080), VideoLayout.automatic(498, 1080, 1920, 1080, 4f))
+        assertEquals(VideoRect(1920, 885), VideoLayout.automatic(1080, 498, 1920, 1080, 4f))
+    }
+
+
+    @Test
+    fun `automatic widens portrait without cropping`() {
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080))
+    }
+
+    @Test
+    fun `rotation restores fitted landscape and zooms again on return`() {
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080))
+        assertEquals(VideoRect(1920, 885), VideoLayout.automatic(1080, 498, 1920, 1080))
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080))
+    }
+
+    @Test
+    fun `automatic keeps square and invalid geometry safe`() {
+        assertEquals(VideoRect(1080, 1080), VideoLayout.automatic(500, 500, 1920, 1080))
+        assertNull(VideoLayout.automatic(0, 1080, 1920, 1080))
+        assertNull(VideoLayout.automatic(498, 1080, 0, 1080))
+    }
+
 
     @Test
     fun `a portrait stream is limited by the screen height`() {

@@ -10,6 +10,19 @@ data class VideoRect(val width: Int, val height: Int)
 object VideoLayout {
 
     /**
+     * Widen portrait pictures by the selected factor while keeping their full height visible.
+     * Landscape and square pictures keep the original fit behaviour.
+     */
+    fun automatic(sourceWidth: Int, sourceHeight: Int, availableWidth: Int, availableHeight: Int, portraitFactor: Float = 1.5f): VideoRect? {
+        val fit = fitInside(sourceWidth, sourceHeight, availableWidth, availableHeight) ?: return null
+        if (sourceWidth >= sourceHeight) return fit
+        return VideoRect(
+            (fit.width * portraitFactor.coerceIn(1f, 4f)).roundToInt().coerceAtMost(availableWidth),
+            fit.height,
+        )
+    }
+
+    /**
      * Largest rectangle with the source's aspect ratio that fits inside the screen.
      * Returns null when any dimension is not yet known.
      */

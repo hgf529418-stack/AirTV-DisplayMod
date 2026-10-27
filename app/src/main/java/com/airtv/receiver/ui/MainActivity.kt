@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.KeyEvent
 import android.view.Gravity
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import com.airtv.receiver.R
 import com.airtv.receiver.airplay.AirPlayReceiver
 import com.airtv.receiver.airplay.ReceiverState
@@ -29,6 +31,26 @@ class MainActivity : Activity() {
     private lateinit var overlay: View
     private lateinit var statusText: TextView
     private lateinit var detailsText: TextView
+
+    private val widthPrefs by lazy { getSharedPreferences("display_settings", Context.MODE_PRIVATE) }
+    private var widthPercent: Int
+        get() = widthPrefs.getInt(
+            "portrait_width_percent",
+            100 + widthPrefs.getInt("portrait_width_step", 2).coerceIn(0, 12) * 25,
+        ).coerceIn(100, 400)
+        set(value) { widthPrefs.edit().putInt("portrait_width_percent", value.coerceIn(100, 400)).apply() }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        val state = receiver?.state as? ReceiverState.Streaming
+        if (state != null && state.width > 0 && state.width < state.height &&
+            (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            widthPercent += if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 10 else -10
+            applyVideoAspect(state.width, state.height)
+            Toast.makeText(this, "Portrait width: ${widthPercent}%", Toast.LENGTH_SHORT).show()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
     private var service: AirPlayService.LocalBinder? = null
     private var receiver: AirPlayReceiver? = null
@@ -96,12 +118,7 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    /**
-     * Sizes the video rectangle to the stream's aspect ratio and centres it, so a portrait
-     * iPhone is pillarboxed instead of stretched across the whole panel. The surface's
-     * buffer size is left alone: the decoder is the producer, and the compositor scales its
-     * output into this rectangle.
-     */
+    /** Centre the decoder surface; portrait is widened while its full height remains visible. */
     private fun applyVideoAspect(sourceWidth: Int, sourceHeight: Int) {
         val root = findViewById<View>(android.R.id.content)
         val availableWidth = root.width
@@ -111,8 +128,8 @@ class MainActivity : Activity() {
             root.post { applyVideoAspect(sourceWidth, sourceHeight) }
             return
         }
-        val rect = VideoLayout.fitInside(
-            sourceWidth, sourceHeight, availableWidth, availableHeight,
+        val rect = VideoLayout.automatic(
+            sourceWidth, sourceHeight, availableWidth, availableHeight, widthPercent / 100f,
         ) ?: return
         val current = surfaceView.layoutParams as? FrameLayout.LayoutParams
         if (current != null && current.width == rect.width && current.height == rect.height) {

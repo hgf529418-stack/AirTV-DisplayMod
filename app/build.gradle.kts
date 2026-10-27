@@ -62,6 +62,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".displaymod"
+            versionNameSuffix = "-displaymod"
+        }
         release {
             isMinifyEnabled = false
             // Falls back to the debug key for local builds with no keystore configured.
