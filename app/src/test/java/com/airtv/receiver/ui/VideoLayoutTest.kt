@@ -12,6 +12,26 @@ import org.junit.Test
 class VideoLayoutTest {
 
     @Test
+    fun `automatic zoom enlarges portrait and crops vertically`() {
+        assertEquals(VideoRect(747, 1620), VideoLayout.automatic(498, 1080, 1920, 1080))
+    }
+
+    @Test
+    fun `rotation restores fitted landscape and zooms again on return`() {
+        assertEquals(VideoRect(747, 1620), VideoLayout.automatic(498, 1080, 1920, 1080))
+        assertEquals(VideoRect(1920, 885), VideoLayout.automatic(1080, 498, 1920, 1080))
+        assertEquals(VideoRect(747, 1620), VideoLayout.automatic(498, 1080, 1920, 1080))
+    }
+
+    @Test
+    fun `automatic keeps square and invalid geometry safe`() {
+        assertEquals(VideoRect(1080, 1080), VideoLayout.automatic(500, 500, 1920, 1080))
+        assertNull(VideoLayout.automatic(0, 1080, 1920, 1080))
+        assertNull(VideoLayout.automatic(498, 1080, 0, 1080))
+    }
+
+
+    @Test
     fun `a portrait stream is limited by the screen height`() {
         val rect = VideoLayout.fitInside(498, 1080, 1920, 1080)!!
         assertEquals(498, rect.width)
