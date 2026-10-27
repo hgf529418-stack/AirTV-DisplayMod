@@ -12,15 +12,15 @@ import org.junit.Test
 class VideoLayoutTest {
 
     @Test
-    fun `automatic zoom enlarges portrait and crops vertically`() {
-        assertEquals(VideoRect(747, 1620), VideoLayout.automatic(498, 1080, 1920, 1080))
+    fun `automatic widens portrait without cropping`() {
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080))
     }
 
     @Test
     fun `rotation restores fitted landscape and zooms again on return`() {
-        assertEquals(VideoRect(747, 1620), VideoLayout.automatic(498, 1080, 1920, 1080))
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080))
         assertEquals(VideoRect(1920, 885), VideoLayout.automatic(1080, 498, 1920, 1080))
-        assertEquals(VideoRect(747, 1620), VideoLayout.automatic(498, 1080, 1920, 1080))
+        assertEquals(VideoRect(747, 1080), VideoLayout.automatic(498, 1080, 1920, 1080))
     }
 
     @Test
