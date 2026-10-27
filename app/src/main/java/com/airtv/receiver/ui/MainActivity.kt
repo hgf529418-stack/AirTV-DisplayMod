@@ -96,7 +96,7 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    /** Centre the decoder surface; portrait zoom is clipped at the display edges. */
+    /** Centre the decoder surface; portrait is widened while its full height remains visible. */
     private fun applyVideoAspect(sourceWidth: Int, sourceHeight: Int) {
         val root = findViewById<View>(android.R.id.content)
         val availableWidth = root.width
