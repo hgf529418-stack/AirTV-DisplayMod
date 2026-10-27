@@ -10,15 +10,15 @@ data class VideoRect(val width: Int, val height: Int)
 object VideoLayout {
 
     /**
-     * Zoom portrait pictures by 1.5x, centred and clipped by the display.
+     * Widen portrait pictures by 1.5x while keeping their full height visible.
      * Landscape and square pictures keep the original fit behaviour.
      */
     fun automatic(sourceWidth: Int, sourceHeight: Int, availableWidth: Int, availableHeight: Int): VideoRect? {
         val fit = fitInside(sourceWidth, sourceHeight, availableWidth, availableHeight) ?: return null
         if (sourceWidth >= sourceHeight) return fit
         return VideoRect(
-            (fit.width * 1.5).roundToInt(),
-            (fit.height * 1.5).roundToInt(),
+            (fit.width * 1.5).roundToInt().coerceAtMost(availableWidth),
+            fit.height,
         )
     }
 
