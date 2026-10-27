@@ -96,12 +96,7 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    /**
-     * Sizes the video rectangle to the stream's aspect ratio and centres it, so a portrait
-     * iPhone is pillarboxed instead of stretched across the whole panel. The surface's
-     * buffer size is left alone: the decoder is the producer, and the compositor scales its
-     * output into this rectangle.
-     */
+    /** Centre the decoder surface; portrait zoom is clipped at the display edges. */
     private fun applyVideoAspect(sourceWidth: Int, sourceHeight: Int) {
         val root = findViewById<View>(android.R.id.content)
         val availableWidth = root.width
@@ -111,7 +106,7 @@ class MainActivity : Activity() {
             root.post { applyVideoAspect(sourceWidth, sourceHeight) }
             return
         }
-        val rect = VideoLayout.fitInside(
+        val rect = VideoLayout.automatic(
             sourceWidth, sourceHeight, availableWidth, availableHeight,
         ) ?: return
         val current = surfaceView.layoutParams as? FrameLayout.LayoutParams
