@@ -10,6 +10,19 @@ data class VideoRect(val width: Int, val height: Int)
 object VideoLayout {
 
     /**
+     * Zoom portrait pictures by 1.5x, centred and clipped by the display.
+     * Landscape and square pictures keep the original fit behaviour.
+     */
+    fun automatic(sourceWidth: Int, sourceHeight: Int, availableWidth: Int, availableHeight: Int): VideoRect? {
+        val fit = fitInside(sourceWidth, sourceHeight, availableWidth, availableHeight) ?: return null
+        if (sourceWidth >= sourceHeight) return fit
+        return VideoRect(
+            (fit.width * 1.5).roundToInt(),
+            (fit.height * 1.5).roundToInt(),
+        )
+    }
+
+    /**
      * Largest rectangle with the source's aspect ratio that fits inside the screen.
      * Returns null when any dimension is not yet known.
      */
