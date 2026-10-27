@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.KeyEvent
 import android.view.Gravity
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import com.airtv.receiver.R
 import com.airtv.receiver.airplay.AirPlayReceiver
 import com.airtv.receiver.airplay.ReceiverState
@@ -29,6 +31,23 @@ class MainActivity : Activity() {
     private lateinit var overlay: View
     private lateinit var statusText: TextView
     private lateinit var detailsText: TextView
+
+    private val widthPrefs by lazy { getSharedPreferences("display_settings", Context.MODE_PRIVATE) }
+    private var widthStep: Int
+        get() = widthPrefs.getInt("portrait_width_step", 2).coerceIn(0, 12)
+        set(value) { widthPrefs.edit().putInt("portrait_width_step", value.coerceIn(0, 12)).apply() }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        val state = receiver?.state as? ReceiverState.Streaming
+        if (state != null && state.width > 0 && state.width < state.height &&
+            (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            widthStep += if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
+            applyVideoAspect(state.width, state.height)
+            Toast.makeText(this, "Portrait width: ${100 + widthStep * 25}%", Toast.LENGTH_SHORT).show()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
     private var service: AirPlayService.LocalBinder? = null
     private var receiver: AirPlayReceiver? = null
@@ -107,7 +126,7 @@ class MainActivity : Activity() {
             return
         }
         val rect = VideoLayout.automatic(
-            sourceWidth, sourceHeight, availableWidth, availableHeight,
+            sourceWidth, sourceHeight, availableWidth, availableHeight, 1f + widthStep * 0.25f,
         ) ?: return
         val current = surfaceView.layoutParams as? FrameLayout.LayoutParams
         if (current != null && current.width == rect.width && current.height == rect.height) {
